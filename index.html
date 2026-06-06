@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combo Intelligence — AI Status</title>
+<style>
+  :root { --bg:#0a0b0f; --card:#14161d; --line:#222632; --t0:#f2f4f8; --t2:#8b93a7;
+          --accent:#ff7a3c; --green:#39d98a; --cyan:#37d0e0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--t0);
+         font-family:-apple-system,Segoe UI,Roboto,sans-serif; min-height:100vh;
+         display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px;
+          padding:28px 26px; max-width:440px; width:100%; }
+  .brand { font-size:12px; letter-spacing:2px; color:var(--accent); font-weight:700; }
+  h1 { font-size:20px; margin:6px 0 18px; }
+  .phase { font-size:26px; font-weight:800; margin:4px 0; }
+  .detail { color:var(--t2); font-size:15px; line-height:1.5; }
+  .bar { height:10px; background:#0a0c12; border-radius:6px; overflow:hidden; margin:18px 0 6px; border:1px solid var(--line); }
+  .fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--cyan)); transition:width .4s; }
+  .result { margin-top:18px; padding:16px; background:#0f1a14; border:1px solid #1f4533;
+            border-radius:12px; }
+  .result .big { font-size:30px; font-weight:800; color:var(--green); }
+  .result .sub { color:var(--t2); font-size:13px; }
+  .meta { margin-top:18px; color:var(--t2); font-size:12px; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green);
+         margin-right:6px; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
+</head>
+<body>
+<div class="card" id="app"><div class="detail">loading status…</div></div>
+<script>
+async function load() {
+  try {
+    const s = await (await fetch('status.json?_=' + Date.now())).json();
+    const pct = s.done ? 100 : Math.round((s.matches_cut/10)*90);
+    let res = '';
+    if (s.done && s.result) {
+      const t1 = (s.result.m26_top1*100).toFixed(0), t3 = (s.result.m26_top3*100).toFixed(0);
+      res = `<div class="result"><div class="big">${t1}% top-1</div>
+             <div class="sub">${t3}% top-3 on a held-out real match · previous benchmark was 18%</div></div>`;
+    }
+    document.getElementById('app').innerHTML = `
+      <div class="brand">COMBO INTELLIGENCE · AI</div>
+      <h1>Move-recognizer training</h1>
+      <div class="phase">${s.phase}</div>
+      <div class="detail">${s.detail}</div>
+      <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+      ${res}
+      <div class="meta"><span class="dot"></span>updated ${s.updated} · auto-refreshes every 20s</div>`;
+  } catch (e) {
+    document.getElementById('app').innerHTML = '<div class="detail">status not available yet — check back in a minute.</div>';
+  }
+}
+load(); setInterval(load, 20000);
+</script>
+</body>
+</html>
